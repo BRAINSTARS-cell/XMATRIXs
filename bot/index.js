@@ -1,13 +1,67 @@
+// ==========================================
+// ⚡ XMATRIX — FUTURISTIC TELEGRAM BOT
+// Version 1.0.0
+// ==========================================
+
+const http = require("http");
 const { Telegraf, Markup } = require("telegraf");
 require("dotenv").config();
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+// ==========================================
+// CONFIGURATION
+// ==========================================
 
+const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = Number(process.env.OWNER_ID);
+const PORT = process.env.PORT || 10000;
 
-// ===============================
-// XMATRIX MAIN MENU
-// ===============================
+if (!BOT_TOKEN) {
+  console.error("❌ BOT_TOKEN is missing.");
+  process.exit(1);
+}
+
+if (!OWNER_ID) {
+  console.error("❌ OWNER_ID is missing.");
+  process.exit(1);
+}
+
+const bot = new Telegraf(BOT_TOKEN);
+
+// ==========================================
+// RENDER WEB SERVER
+// ==========================================
+
+const server = http.createServer((req, res) => {
+  if (req.url === "/health") {
+    res.writeHead(200, {
+      "Content-Type": "application/json"
+    });
+
+    res.end(
+      JSON.stringify({
+        status: "online",
+        system: "XMATRIX",
+        version: "1.0.0"
+      })
+    );
+
+    return;
+  }
+
+  res.writeHead(200, {
+    "Content-Type": "text/plain"
+  });
+
+  res.end("⚡ XMATRIX ONLINE");
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`🌐 XMATRIX WEB SERVER ONLINE ON PORT ${PORT}`);
+});
+
+// ==========================================
+// MAIN MENU
+// ==========================================
 
 function mainMenu() {
   return Markup.inlineKeyboard([
@@ -41,9 +95,21 @@ function mainMenu() {
   ]);
 }
 
-// ===============================
-// START
-// ===============================
+// ==========================================
+// BACK BUTTON
+// ==========================================
+
+function backButton() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback("⬅️ BACK TO XMATRIX", "home")
+    ]
+  ]);
+}
+
+// ==========================================
+// /START
+// ==========================================
 
 bot.start(async (ctx) => {
   const name = ctx.from.first_name || "User";
@@ -60,360 +126,663 @@ bot.start(async (ctx) => {
 
 ━━━━━━━━━━━━━━━━━━
 
-🚀 Welcome to the next generation
-of Telegram automation.
+🚀 NEXT-GENERATION
+TELEGRAM INTELLIGENCE
 
 Select a module below.`,
     mainMenu()
   );
 });
 
-// ===============================
-// BASIC COMMANDS
-// ===============================
+// ==========================================
+// /ID
+// ==========================================
 
-bot.command("id", (ctx) => {
-  ctx.reply(
+bot.command("id", async (ctx) => {
+  await ctx.reply(
 `🆔 YOUR TELEGRAM ID
 
 ${ctx.from.id}`
   );
 });
 
-bot.command("help", (ctx) => {
-  ctx.reply(
+// ==========================================
+// /HELP
+// ==========================================
+
+bot.command("help", async (ctx) => {
+  await ctx.reply(
 `⚡ XMATRIX HELP
 
-/start — Open XMATRIX
-/id — Show your Telegram ID
-/help — Show help
-/profile — Your profile
-/premium — Premium information
-/status — System status`
+/start
+Open XMATRIX
+
+/id
+Show your Telegram ID
+
+/profile
+View your profile
+
+/premium
+View Premium
+
+/status
+System status
+
+/panel
+Owner control panel
+
+/help
+Show this help`
   );
 });
 
-bot.command("profile", (ctx) => {
-  ctx.reply(
+// ==========================================
+// /PROFILE
+// ==========================================
+
+bot.command("profile", async (ctx) => {
+  const username = ctx.from.username
+    ? `@${ctx.from.username}`
+    : "Not set";
+
+  const isOwner = ctx.from.id === OWNER_ID;
+
+  await ctx.reply(
 `👤 XMATRIX PROFILE
 
-Name: ${ctx.from.first_name || "Unknown"}
-Username: @${ctx.from.username || "none"}
-ID: ${ctx.from.id}
+━━━━━━━━━━━━━━━━━━
 
-💎 Plan: FREE`
+👤 Name:
+${ctx.from.first_name || "Unknown"}
+
+🔗 Username:
+${username}
+
+🆔 Telegram ID:
+${ctx.from.id}
+
+💎 Plan:
+${isOwner ? "👑 OWNER" : "FREE"}
+
+━━━━━━━━━━━━━━━━━━
+
+⚡ XMATRIX ACCOUNT`
   );
 });
 
-bot.command("premium", (ctx) => {
-  ctx.reply(
+// ==========================================
+// /PREMIUM
+// ==========================================
+
+bot.command("premium", async (ctx) => {
+  await ctx.reply(
 `💎 XMATRIX PREMIUM
 
-Premium features are being prepared.
+━━━━━━━━━━━━━━━━━━
 
-🚀 Advanced AI
+⚡ Advanced AI
 🎙 Voice AI
+🖼 AI Vision
 📄 Document AI
-📥 Advanced tools
-⚡ Priority processing`
+📥 Advanced Downloader
+🚀 Priority Processing
+🧠 Extended AI Features
+
+━━━━━━━━━━━━━━━━━━
+
+💎 PREMIUM SYSTEM
+COMING SOON`
   );
 });
 
-bot.command("status", (ctx) => {
-  ctx.reply(
+// ==========================================
+// /STATUS
+// ==========================================
+
+bot.command("status", async (ctx) => {
+  await ctx.reply(
 `📡 XMATRIX SYSTEM STATUS
+
+━━━━━━━━━━━━━━━━━━
 
 🟢 CORE ........ ONLINE
 🟢 TELEGRAM .... ONLINE
+🟢 SERVER ...... ONLINE
 🟢 COMMANDS .... ONLINE
 🟡 AI ENGINE ... STANDBY
 🟡 DATABASE .... STANDBY
 🟡 MINI APP .... STANDBY
 
-SYSTEM v1.0`
+━━━━━━━━━━━━━━━━━━
+
+⚡ SYSTEM v1.0.0`
   );
 });
 
-// ===============================
-// BUTTON HANDLERS
-// ===============================
+// ==========================================
+// HOME BUTTON
+// ==========================================
+
+bot.action("home", async (ctx) => {
+  await ctx.answerCbQuery();
+
+  const name = ctx.from.first_name || "User";
+
+  await ctx.editMessageText(
+`⚡ XMATRIX
+
+👋 Welcome back, ${name}.
+
+🟢 CORE: ONLINE
+🧠 AI: READY
+💎 PREMIUM: AVAILABLE
+🔐 SECURITY: ACTIVE
+
+━━━━━━━━━━━━━━━━━━
+
+Select a module below.`,
+    mainMenu()
+  );
+});
+
+// ==========================================
+// AI CORE
+// ==========================================
 
 bot.action("ai", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `🧠 AI CORE
 
-Your XMATRIX intelligence center.
+━━━━━━━━━━━━━━━━━━
 
-Available soon:
+XMATRIX intelligence center.
 
-• AI Chat
-• Smart answers
-• Summarization
-• Translation
-• Coding assistant
-• Context memory`
+Planned capabilities:
+
+💬 AI Chat
+🧠 Context-aware answers
+📝 Summarization
+🌐 Translation
+💻 Coding Assistant
+📚 Smart Learning
+🔎 Research Assistant
+
+━━━━━━━━━━━━━━━━━━
+
+⚡ AI ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// VOICE AI
+// ==========================================
 
 bot.action("voice", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `🎙 VOICE AI
 
-Send a voice message.
+━━━━━━━━━━━━━━━━━━
 
-XMATRIX will eventually be able to:
+Talk to XMATRIX using your voice.
 
-🎤 Transcribe speech
-🧠 Understand commands
-📝 Create action items
-⚡ Execute voice commands`
+Planned capabilities:
+
+🎤 Speech → Text
+🧠 Voice Understanding
+⚡ Voice Commands
+📝 Action Items
+🔊 AI Responses
+
+━━━━━━━━━━━━━━━━━━
+
+🎙 VOICE ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// AI VISION
+// ==========================================
 
 bot.action("vision", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `🖼 AI VISION
+
+━━━━━━━━━━━━━━━━━━
 
 Send an image to XMATRIX.
 
 Planned capabilities:
 
-🔍 Image analysis
-📖 Text extraction
-🧠 Image understanding
-🎨 Visual AI`
+🔍 Image Analysis
+📖 OCR / Text Extraction
+🧠 Image Understanding
+🎨 Visual Intelligence
+📊 Image Questions
+
+━━━━━━━━━━━━━━━━━━
+
+🖼 VISION ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// DOCUMENT AI
+// ==========================================
 
 bot.action("docs", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `📄 DOC AI
 
-Upload a document.
+━━━━━━━━━━━━━━━━━━
 
-Planned:
+Upload a document and let
+XMATRIX understand it.
+
+Planned capabilities:
 
 📚 PDF Q&A
-📝 Summaries
-🔎 Document search
-🧠 Smart explanations`
+📝 Document Summaries
+🔎 Smart Search
+🧠 Document Analysis
+📖 Study Assistant
+
+━━━━━━━━━━━━━━━━━━
+
+📄 DOC ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// PREMIUM
+// ==========================================
 
 bot.action("premium", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
-`💎 PREMIUM
+  await ctx.editMessageText(
+`💎 XMATRIX PREMIUM
 
-Unlock the full XMATRIX system.
+━━━━━━━━━━━━━━━━━━
+
+Unlock advanced XMATRIX features.
 
 ⚡ Advanced AI
 🎙 Voice AI
+🖼 AI Vision
 📄 Document AI
-📥 Premium tools
-🚀 Priority processing
+📥 Premium Tools
+🚀 Priority Processing
+🧠 Extended Intelligence
 
-Coming soon.`
+━━━━━━━━━━━━━━━━━━
+
+💎 PREMIUM
+COMING SOON`,
+    backButton()
   );
 });
+
+// ==========================================
+// PROFILE
+// ==========================================
 
 bot.action("profile", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  const username = ctx.from.username
+    ? `@${ctx.from.username}`
+    : "Not set";
+
+  const isOwner = ctx.from.id === OWNER_ID;
+
+  await ctx.editMessageText(
 `👤 PROFILE
 
-Name: ${ctx.from.first_name || "Unknown"}
-Username: @${ctx.from.username || "none"}
-Telegram ID: ${ctx.from.id}
+━━━━━━━━━━━━━━━━━━
 
-💎 Plan: FREE`
+👤 ${ctx.from.first_name || "Unknown"}
+
+🔗 ${username}
+
+🆔 ${ctx.from.id}
+
+💎 ${isOwner ? "OWNER" : "FREE USER"}
+
+━━━━━━━━━━━━━━━━━━
+
+⚡ XMATRIX ACCOUNT`,
+    backButton()
   );
 });
+
+// ==========================================
+// PROMO
+// ==========================================
 
 bot.action("promo", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `🎟 PROMO CENTER
+
+━━━━━━━━━━━━━━━━━━
 
 Have an XMATRIX promo code?
 
-Send:
+Use:
 
 /promo YOUR_CODE
 
-Promo system coming soon.`
+━━━━━━━━━━━━━━━━━━
+
+🎟 PROMO SYSTEM
+COMING SOON`,
+    backButton()
   );
 });
+
+// ==========================================
+// PAYMENTS
+// ==========================================
 
 bot.action("payments", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `💳 PAYMENTS
+
+━━━━━━━━━━━━━━━━━━
 
 XMATRIX payment infrastructure.
 
 Planned:
 
 ⭐ Telegram Stars
-💎 Premium subscriptions
-⚡ Digital products
-🌐 TON payments`
+💎 Premium Subscriptions
+🛒 Digital Products
+🌐 TON Payments
+
+━━━━━━━━━━━━━━━━━━
+
+💳 PAYMENT ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// DOWNLOADER
+// ==========================================
 
 bot.action("download", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `📥 DOWNLOADER
 
-Media tools will be connected here.
+━━━━━━━━━━━━━━━━━━
 
-Supported modules will be added
-during the next development stage.`
+Media tools will be connected
+to XMATRIX here.
+
+Planned:
+
+🎵 Music
+🎬 Video
+📷 Media
+📁 Files
+🔗 URL Processing
+
+━━━━━━━━━━━━━━━━━━
+
+📥 DOWNLOAD ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// GAMES
+// ==========================================
 
 bot.action("games", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `🎮 XMATRIX GAMES
 
-Mini games and interactive
-Telegram experiences will appear here.`
+━━━━━━━━━━━━━━━━━━
+
+Interactive Telegram games.
+
+Planned:
+
+🎯 Challenges
+🏆 Leaderboards
+🧠 Trivia
+🎲 Mini Games
+⚡ Multiplayer
+
+━━━━━━━━━━━━━━━━━━
+
+🎮 GAME ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// TOOLS
+// ==========================================
 
 bot.action("tools", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `🔧 XMATRIX TOOLS
 
-🧮 Calculator
-🔐 Security tools
-📝 Text tools
-🌐 Web utilities
-⚙️ Developer tools
+━━━━━━━━━━━━━━━━━━
 
-More tools coming soon.`
+🧮 Calculator
+📝 Text Tools
+🔐 Security Tools
+🌐 Web Utilities
+💻 Developer Tools
+📊 Data Tools
+⚙️ Automation
+
+━━━━━━━━━━━━━━━━━━
+
+🔧 TOOL ENGINE
+STANDBY`,
+    backButton()
   );
 });
+
+// ==========================================
+// STATUS BUTTON
+// ==========================================
 
 bot.action("status", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `📡 XMATRIX STATUS
 
-🟢 CORE ONLINE
-🟢 BOT ONLINE
-🟢 TELEGRAM ONLINE
+━━━━━━━━━━━━━━━━━━
 
-VERSION: 1.0`
+🟢 CORE ........ ONLINE
+🟢 BOT ......... ONLINE
+🟢 TELEGRAM .... ONLINE
+🟢 SERVER ...... ONLINE
+
+🟡 AI .......... STANDBY
+🟡 DATABASE .... STANDBY
+🟡 MINI APP .... STANDBY
+
+━━━━━━━━━━━━━━━━━━
+
+VERSION 1.0.0`,
+    backButton()
   );
 });
+
+// ==========================================
+// MINI APP
+// ==========================================
 
 bot.action("miniapp", async (ctx) => {
   await ctx.answerCbQuery();
 
-  await ctx.reply(
+  await ctx.editMessageText(
 `🚀 XMATRIX MINI APP
 
-The XMATRIX full-screen interface
-will be connected here.
+━━━━━━━━━━━━━━━━━━
 
-Coming soon:
+The XMATRIX full-screen
+experience will live here.
+
+Planned:
 
 📊 Dashboard
-🧠 AI workspace
-💎 Premium center
+🧠 AI Workspace
+💎 Premium Center
 ⚙️ Settings
-📱 Interactive tools`
+📱 Interactive Tools
+👤 Account Center
+
+━━━━━━━━━━━━━━━━━━
+
+🚀 MINI APP
+COMING SOON`,
+    backButton()
   );
 });
 
-// ===============================
-// OWNER COMMAND
-// ===============================
+// ==========================================
+// OWNER PANEL
+// ==========================================
 
-bot.command("panel", (ctx) => {
+bot.command("panel", async (ctx) => {
   if (ctx.from.id !== OWNER_ID) {
-    return ctx.reply("⛔ Owner access required.");
+    return ctx.reply(
+`⛔ ACCESS DENIED
+
+This command is restricted
+to the XMATRIX owner.`
+    );
   }
 
-  ctx.reply(
+  await ctx.reply(
 `👑 XMATRIX OWNER PANEL
+
+━━━━━━━━━━━━━━━━━━
 
 🟢 SYSTEM ONLINE
 
 Available controls:
 
-• Bot management
-• User management
-• Premium management
-• Promo management
-• System statistics
-• Broadcast
-• Maintenance mode`
+👥 User Management
+💎 Premium Management
+🎟 Promo Management
+📢 Broadcast
+📊 Statistics
+⚙️ System Settings
+🔧 Maintenance
+
+━━━━━━━━━━━━━━━━━━
+
+👑 OWNER ACCESS VERIFIED`
   );
 });
 
-// ===============================
-// UNKNOWN COMMAND
-// ===============================
+// ==========================================
+// UNKNOWN COMMAND HANDLER
+// ==========================================
 
-bot.on("text", (ctx) => {
-  if (ctx.message.text.startsWith("/")) {
-    ctx.reply(
+bot.on("text", async (ctx) => {
+  const message = ctx.message.text;
+
+  if (!message.startsWith("/")) {
+    return;
+  }
+
+  await ctx.reply(
 `⚡ XMATRIX
 
-Unknown command.
+❌ Unknown command.
 
 Use /help to see available commands.`
-    );
-  }
+  );
 });
 
-// ===============================
+// ==========================================
 // ERROR HANDLER
-// ===============================
+// ==========================================
 
-bot.catch((err) => {
-  console.error("XMATRIX ERROR:", err);
+bot.catch((err, ctx) => {
+  console.error(
+    "❌ XMATRIX ERROR:",
+    err
+  );
+
+  try {
+    ctx.reply(
+      "⚠️ XMATRIX encountered an error. Please try again."
+    );
+  } catch (_) {}
 });
 
-// ===============================
-// START BOT
-// ===============================
-
-if (!process.env.BOT_TOKEN) {
-  console.error("❌ BOT_TOKEN is missing.");
-  process.exit(1);
-}
+// ==========================================
+// LAUNCH
+// ==========================================
 
 console.log("⚡ XMATRIX CORE INITIALIZING...");
+console.log("🧠 AI SYSTEM: READY");
+console.log("🔐 SECURITY SYSTEM: READY");
+console.log("📡 TELEGRAM ENGINE: STARTING...");
 
 bot.launch()
   .then(() => {
     console.log("🟢 XMATRIX ONLINE");
+    console.log("🚀 XMATRIX IS READY");
   })
   .catch((err) => {
-    console.error("❌ Failed to start XMATRIX:", err);
+    console.error(
+      "❌ XMATRIX FAILED TO START:",
+      err
+    );
+
+    process.exit(1);
   });
 
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+// ==========================================
+// SAFE SHUTDOWN
+// ==========================================
+
+process.once("SIGINT", () => {
+  console.log("🛑 XMATRIX STOPPING...");
+  bot.stop("SIGINT");
+});
+
+process.once("SIGTERM", () => {
+  console.log("🛑 XMATRIX STOPPING...");
+  bot.stop("SIGTERM");
+});
